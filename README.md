@@ -1,4 +1,3 @@
-============================================================
 Delayed Synchronization in Mini-batch Training
 A Communication–Accuracy Trade-off Study on CIFAR-10
 ============================================================
