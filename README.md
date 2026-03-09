@@ -133,10 +133,10 @@ test accuracy = 53.70%
 
 project/
 
-train_1.py
+train.py
 training script
 
-plot_results.py
+plot.py
 generates accuracy plots
 
 results/
@@ -153,14 +153,14 @@ README
 
 Run experiments
 
-python train_1.py --epochs 10 --k 1 --seed 42
-python train_1.py --epochs 10 --k 2 --seed 42
-python train_1.py --epochs 10 --k 4 --seed 42
-python train_1.py --epochs 10 --k 8 --seed 42
+python train.py --epochs 10 --k 1 --seed 42
+python train.py --epochs 10 --k 2 --seed 42
+python train.py --epochs 10 --k 4 --seed 42
+python train.py --epochs 10 --k 8 --seed 42
 
 Generate plots
 
-python plot_results.py
+python plot.py
 
 
 8. Possible Extensions
