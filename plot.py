@@ -1,5 +1,6 @@
 import os
 import csv
+import argparse
 import matplotlib.pyplot as plt
 
 
@@ -10,22 +11,37 @@ def read_csv(path):
         for row in reader:
             rows.append({
                 "epoch": int(row["epoch"]),
-                "k": int(row["k"]),
-                "test_acc": float(row["test_acc"]) * 100.0,  # convert to %
-                "comm_rounds": int(row["comm_rounds"]),
+                "num_virtual_workers": int(row["num_virtual_workers"]),
+                "local_steps": int(row["local_steps"]),
+                "test_acc": float(row["test_acc"]) * 100.0,
+                "averaging_rounds": int(row["averaging_rounds"]),
                 "train_loss": float(row["train_loss"]),
                 "test_loss": float(row["test_loss"]),
                 "epoch_time_sec": float(row["epoch_time_sec"]),
+                "samples_seen": int(row["samples_seen"]),
+                "batches_seen": int(row["batches_seen"]),
             })
     return rows
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--v_workers", type=int, default=4)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--local_steps_list",
+        type=int,
+        nargs="+",
+        default=[1, 2, 4, 8],
+    )
+    args = parser.parse_args()
+
     files = [
-        ("k=1", "results/k1_seed42.csv"),
-        ("k=2", "results/k2_seed42.csv"),
-        ("k=4", "results/k4_seed42.csv"),
-        ("k=8", "results/k8_seed42.csv"),
+        (
+            f"w={args.v_workers}, h={h}",
+            f"results/w{args.v_workers}_h{h}_seed{args.seed}.csv",
+        )
+        for h in args.local_steps_list
     ]
 
     data = {}
@@ -38,7 +54,6 @@ def main():
 
     os.makedirs("figures", exist_ok=True)
 
-    # 1) test accuracy vs epoch
     plt.figure(figsize=(8, 5))
     for label, rows in data.items():
         xs = [r["epoch"] for r in rows]
@@ -47,41 +62,39 @@ def main():
 
     plt.xlabel("Epoch")
     plt.ylabel("Test Accuracy (%)")
-    plt.title("Test Accuracy vs Epoch")
+    plt.title("Virtual Local SGD: Test Accuracy vs Epoch")
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
     plt.savefig("figures/test_acc_vs_epoch.png", dpi=200)
     plt.close()
 
-    # 2) test accuracy vs communication rounds
     plt.figure(figsize=(8, 5))
     for label, rows in data.items():
-        xs = [r["comm_rounds"] for r in rows]
+        xs = [r["averaging_rounds"] for r in rows]
         ys = [r["test_acc"] for r in rows]
         plt.plot(xs, ys, marker="o", label=label)
 
-    plt.xlabel("Communication Rounds")
+    plt.xlabel("Averaging Rounds (Analytical Communication Proxy)")
     plt.ylabel("Test Accuracy (%)")
-    plt.title("Test Accuracy vs Communication Rounds")
+    plt.title("Virtual Local SGD: Test Accuracy vs Averaging Rounds")
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("figures/test_acc_vs_comm_rounds.png", dpi=200)
+    plt.savefig("figures/test_acc_vs_averaging_rounds.png", dpi=200)
     plt.close()
 
     print("Saved figures:")
     print(" - figures/test_acc_vs_epoch.png")
-    print(" - figures/test_acc_vs_comm_rounds.png")
+    print(" - figures/test_acc_vs_averaging_rounds.png")
 
-    # print final summary
     print("\nFinal epoch summary:")
     for label, rows in data.items():
         last = rows[-1]
         print(
             f"{label}: "
             f"test_acc={last['test_acc']:.2f}% | "
-            f"comm_rounds={last['comm_rounds']} | "
+            f"averaging_rounds={last['averaging_rounds']} | "
             f"train_loss={last['train_loss']:.4f} | "
             f"test_loss={last['test_loss']:.4f}"
         )
