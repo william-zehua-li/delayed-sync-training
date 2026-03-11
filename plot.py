@@ -84,9 +84,25 @@ def main():
     plt.savefig("figures/test_acc_vs_averaging_rounds.png", dpi=200)
     plt.close()
 
+    plt.figure(figsize=(8, 5))
+    for label, rows in data.items():
+        xs = [r["averaging_rounds"] for r in rows]
+        ys = [r["train_loss"] for r in rows]
+        plt.plot(xs, ys, marker="o", label=label)
+
+    plt.xlabel("Averaging Rounds (Analytical Communication Proxy)")
+    plt.ylabel("Training Loss")
+    plt.title("Virtual Local SGD: Training Loss vs Averaging Rounds")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("figures/train_loss_vs_averaging_rounds.png", dpi=200)
+    plt.close()
+
     print("Saved figures:")
     print(" - figures/test_acc_vs_epoch.png")
     print(" - figures/test_acc_vs_averaging_rounds.png")
+    print(" - figures/train_loss_vs_averaging_rounds.png")
 
     print("\nFinal epoch summary:")
     for label, rows in data.items():
